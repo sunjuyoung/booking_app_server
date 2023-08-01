@@ -1,5 +1,8 @@
 import asynceHandler from 'express-async-handler';
 import User from '../models/User.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import generateToken from '../utils/generateToken.js';
 
 /**
  * @route POST api/auth/register
@@ -26,4 +29,38 @@ const registerUser = asynceHandler(async (req, res) => {
   }
 });
 
-export { registerUser };
+/**
+ * @route POST api/auth/login
+ * @desc POST login user
+ */
+const login = asynceHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  const findUser = await User.findOne({ email });
+  if (!findUser && !(await findUser.matchPassword(password))) {
+    return res.status(400).json({ message: 'please check your email or password' });
+  }
+
+  const accessToken = jwt.sign(
+    {
+      UserInfo: {
+        username: findUser.username,
+        roles: findUser.roles,
+      },
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: '15m' },
+  );
+  //create refreshToken, cookie
+  generateToken(res, findUser);
+
+  return res.status(200).json({
+    _id: findUser._id,
+    username: findUser.username,
+    email: findUser.email,
+    roles: findUser.roles,
+    accessToken,
+  });
+});
+
+export { registerUser, login };
