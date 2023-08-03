@@ -60,4 +60,20 @@ const updateHotel = asynceHandler(async (req, res) => {
   res.status(200).json(updateHotel);
 });
 
-export { createHotel, deleteHotel, getHotelById, getAllHotels, updateHotel };
+/**
+ * @route GET api/hotels/countByCity?cities=cityName
+ * @desc get All hotels
+ */
+const countByCity = asynceHandler(async (req, res) => {
+  const cities = req.query.cities.split(',');
+
+  const list = await Promise.all(
+    cities.map(city => {
+      return Hotel.countDocuments({ city: city });
+    }),
+  );
+
+  res.status(200).json(list);
+});
+
+export { countByCity, createHotel, deleteHotel, getHotelById, getAllHotels, updateHotel };

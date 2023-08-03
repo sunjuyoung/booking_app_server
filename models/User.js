@@ -23,6 +23,7 @@ const userSchema = new Schema(
       type: [String],
       default: ['Employee'],
     },
+    refreshToken: String,
   },
   {
     timestamps: true,
